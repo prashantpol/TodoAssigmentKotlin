@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import retrofit2.Call
@@ -14,7 +14,7 @@ import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
-    var todoModelList: ArrayList<TodoModel> = ArrayList();
+    var todoModelList: ArrayList<TodoModel>? = ArrayList();
     lateinit var recyclerView: RecyclerView
     lateinit var recyclerAdapter: TodoAdapter
     lateinit var btnNext : Button
@@ -23,9 +23,13 @@ class MainActivity : AppCompatActivity() {
     lateinit var radAll :RadioButton
     lateinit var radComplete :RadioButton
     lateinit var radIncomplete :RadioButton
+    lateinit var searchView : SearchView
     lateinit var  pagination :  TodoPagination
     var currentpage : Int =0
     var totpages : Int=0
+    var radiofilteredList :ArrayList<TodoModel> = ArrayList();
+    var paginatedList : ArrayList<TodoModel> = ArrayList();
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,6 +73,22 @@ class MainActivity : AppCompatActivity() {
                         FilterRadio(todoModelList,2)
                     }
                 })
+
+        searchView=findViewById(R.id.txtsearch);
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                TODO("Not yet implemented")
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if (recyclerAdapter != null) {
+                    recyclerAdapter.getFilter().filter(newText)
+                }
+                return false
+            }
+        })
+
         ButtonEnableDisable()
      }
     fun ButtonEnableDisable()
@@ -98,9 +118,9 @@ class MainActivity : AppCompatActivity() {
 
                 if(todoModelList!=null)
                 {
-                    for (i in 0..todoModelList.size-1)
+                    for (i in 0..todoModelList!!.size-1)
                     {
-                        todoModelList[i].isExpanded=false;
+                        todoModelList!![i].isExpanded=false;
                     }
                 }
                 FilterRadio(response.body(),0)
@@ -112,39 +132,40 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
-    fun FilterRadio(todos : ArrayList<TodoModel>,radioSelected : Int)
+    fun FilterRadio(todos : ArrayList<TodoModel>?,radioSelected : Int)
     {
-        var filteredList :ArrayList<TodoModel> = ArrayList();
-        filteredList.clear();
+
+        radiofilteredList.clear();
         if(radioSelected==0)
         {
-            filteredList=todos;
+            radiofilteredList=todos!!;
         }
         else if(radioSelected==1)
         {
-            for (i in 0..todos.size - 1) {
-                if (todos[i].completed === true) {
-                    filteredList.add(todos[i])
+            for (i in 0..todos!!.size - 1) {
+                if (todos[i]!!.completed === true) {
+                    radiofilteredList.add(todos[i])
                 }
             }
         }
         else if(radioSelected==2)
         {
-            for (i in 0..todos.size - 1) {
+            for (i in 0..todos!!.size - 1) {
                 if (todos[i].completed === false) {
-                    filteredList.add(todos[i])
+                    radiofilteredList.add(todos[i])
                 }
             }
         }
-        if(filteredList.size>0) {
-            pagination = TodoPagination(filteredList)
+        if(radiofilteredList.size>0) {
+            pagination = TodoPagination(radiofilteredList)
             SetAdapter(currentpage)
         }
     }
+
     fun SetAdapter(pageno : Int)
     {
-
-        recyclerAdapter = TodoAdapter(pagination.GetTodoList(pageno),this)
+        paginatedList=pagination.GetTodoList(pageno);
+        recyclerAdapter = TodoAdapter(paginatedList,this)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = recyclerAdapter
         totpages=pagination.totalPages-1;

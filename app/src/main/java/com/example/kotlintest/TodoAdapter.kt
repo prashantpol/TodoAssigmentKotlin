@@ -4,12 +4,14 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 
-class TodoAdapter(private val mTodoModels :List<TodoModel>,private val context : Context) :RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
+class TodoAdapter(public var mTodoModels :ArrayList<TodoModel>?, public val context : Context,) :RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() ,Filterable {
 
 
     class TodoViewHolder(containerView: View): RecyclerView.ViewHolder(containerView) {
@@ -21,7 +23,7 @@ class TodoAdapter(private val mTodoModels :List<TodoModel>,private val context :
             var img_arrow : ImageView=containerView.findViewById(R.id.img_arrow)
             var img_complete : ImageView=containerView.findViewById(R.id.img_complete)
 
-    }
+}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoViewHolder {
         val view=LayoutInflater.from(parent.context).inflate(R.layout.customtodorow,parent,false)
@@ -29,11 +31,11 @@ class TodoAdapter(private val mTodoModels :List<TodoModel>,private val context :
     }
 
     override fun getItemCount(): Int {
-        return mTodoModels.size;
+        return mTodoModels!!.size;
     }
 
     override fun onBindViewHolder(holder: TodoViewHolder, position: Int) {
-        var data=mTodoModels.get(position);
+        var data=mTodoModels!!.get(position);
 
 
        if(data!=null)
@@ -77,10 +79,16 @@ class TodoAdapter(private val mTodoModels :List<TodoModel>,private val context :
            }
 
        }
+    }
+
+    override fun getFilter(): Filter {
+          var filterTodo: FilterTodo? =null
+        if (filterTodo == null) {
+            filterTodo = FilterTodo(mTodoModels as ArrayList<TodoModel>, this)
+        }
 
 
-
-
+        return filterTodo
     }
 
 
