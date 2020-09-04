@@ -44,7 +44,7 @@
                 android:paddingLeft="10dp"
                 android:layout_weight="3"
                 android:paddingRight="10dp"
-                android:text="sdfsdf"></TextView>
+                ></TextView>
             <ImageView
                 android:id="@+id/img_arrow"
                 android:layout_width="50dp"
