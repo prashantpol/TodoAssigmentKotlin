@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import androidx.appcompat.app.AppCompatActivity
+ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,22 +14,16 @@ import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
-    var todoModelList: ArrayList<TodoModel>? = ArrayList();
+    var todoModelList: ArrayList<TodoModel> = ArrayList();
     lateinit var recyclerView: RecyclerView
     lateinit var recyclerAdapter: TodoAdapter
     lateinit var btnNext : Button
     lateinit var btnPrevious : Button
     lateinit var radioGroup : RadioGroup
-    lateinit var radAll :RadioButton
-    lateinit var radComplete :RadioButton
-    lateinit var radIncomplete :RadioButton
-    lateinit var searchView : SearchView
     lateinit var  pagination :  TodoPagination
     var currentpage : Int =0
     var totpages : Int=0
-    var radiofilteredList :ArrayList<TodoModel> = ArrayList();
-    var paginatedList : ArrayList<TodoModel> = ArrayList();
-
+    lateinit var searchView : SearchView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,57 +33,53 @@ class MainActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerview_todo)
 
 
-        btnNext=findViewById(R.id.btnnext);
-        btnNext.setOnClickListener{
+        btnNext = findViewById(R.id.btnnext);
+        btnNext.setOnClickListener {
             //Toast.makeText(this,"TEST",Toast.LENGTH_LONG).show();
-            currentpage=currentpage+1
-             SetAdapter(currentpage)
+            currentpage = currentpage + 1
+            SetAdapter(currentpage)
             ButtonEnableDisable()
         }
-        btnPrevious=findViewById(R.id.btnprevious);
-        btnPrevious.setOnClickListener{
-            currentpage=currentpage-1
+        btnPrevious = findViewById(R.id.btnprevious);
+        btnPrevious.setOnClickListener {
+            currentpage = currentpage - 1
             SetAdapter(currentpage)
             ButtonEnableDisable()
         }
 
-        radioGroup=findViewById(R.id.radiogrp);
+        radioGroup = findViewById(R.id.radiogrp);
         radioGroup.setOnCheckedChangeListener(
                 RadioGroup.OnCheckedChangeListener { group, checkedId ->
                     val radio: RadioButton = findViewById(checkedId)
 //                    Toast.makeText(applicationContext," On checked change : ${radio.text}",
 //                            Toast.LENGTH_SHORT).show()
-                    if(radio.text.equals("All"))
-                    {
-                        FilterRadio(todoModelList,0)
+                    if (radio.text.equals("All")) {
+                        FilterRadio(todoModelList, 0)
 
-                    }
-                    else if(radio.text.equals("Complete"))
-                    {
-                        FilterRadio(todoModelList,1)
-                    }
-                    else if(radio.text.equals("Incomplete"))
-                    {
-                        FilterRadio(todoModelList,2)
+                    } else if (radio.text.equals("Complete")) {
+                        FilterRadio(todoModelList, 1)
+                    } else if (radio.text.equals("Incomplete")) {
+                        FilterRadio(todoModelList, 2)
                     }
                 })
 
-        searchView=findViewById(R.id.txtsearch);
-
+        searchView=findViewById(R.id.txtsearch)
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 TODO("Not yet implemented")
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                if (recyclerAdapter != null) {
-                    recyclerAdapter.getFilter().filter(newText)
-                }
-                return false
+                filter(newText!!)
+                 return false
             }
+
+
         })
 
+
         ButtonEnableDisable()
+
      }
     fun ButtonEnableDisable()
     {
@@ -118,9 +108,9 @@ class MainActivity : AppCompatActivity() {
 
                 if(todoModelList!=null)
                 {
-                    for (i in 0..todoModelList!!.size-1)
+                    for (i in 0..todoModelList.size-1)
                     {
-                        todoModelList!![i].isExpanded=false;
+                        todoModelList[i].isExpanded=false;
                     }
                 }
                 FilterRadio(response.body(),0)
@@ -132,43 +122,68 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
-    fun FilterRadio(todos : ArrayList<TodoModel>?,radioSelected : Int)
+    fun FilterRadio(todos : ArrayList<TodoModel>,radioSelected : Int)
     {
-
-        radiofilteredList.clear();
+        var filteredList :ArrayList<TodoModel> = ArrayList();
+        filteredList.clear();
         if(radioSelected==0)
         {
-            radiofilteredList=todos!!;
+            filteredList=todos;
         }
         else if(radioSelected==1)
         {
-            for (i in 0..todos!!.size - 1) {
-                if (todos[i]!!.completed === true) {
-                    radiofilteredList.add(todos[i])
+            for (i in 0..todos.size - 1) {
+                if (todos[i].completed === true) {
+                    filteredList.add(todos[i])
                 }
             }
         }
         else if(radioSelected==2)
         {
-            for (i in 0..todos!!.size - 1) {
+            for (i in 0..todos.size - 1) {
                 if (todos[i].completed === false) {
-                    radiofilteredList.add(todos[i])
+                    filteredList.add(todos[i])
                 }
             }
         }
-        if(radiofilteredList.size>0) {
-            pagination = TodoPagination(radiofilteredList)
+        if(filteredList.size>0) {
+            pagination = TodoPagination(filteredList)
             SetAdapter(currentpage)
         }
     }
-
     fun SetAdapter(pageno : Int)
     {
-        paginatedList=pagination.GetTodoList(pageno);
-        recyclerAdapter = TodoAdapter(paginatedList,this)
+
+        recyclerAdapter = TodoAdapter(pagination.GetTodoList(pageno),this)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = recyclerAdapter
         totpages=pagination.totalPages-1;
+    }
+
+    private fun filter(text: String) {
+        //new array list that will hold the filtered data
+        val filterdNames: ArrayList<TodoModel> = ArrayList()
+
+        if(!text.equals("")) {
+            //looping through existing elements
+            var templist :  ArrayList<TodoModel> = ArrayList()
+            templist.addAll(pagination.GetTodoList(currentpage))
+            for (s in templist) {
+                //if the existing elements contains the search input
+                if (s.title.replace(" ","").contains(text.replace(" ","").toLowerCase())) {
+                    //adding the element to filtered list
+                    filterdNames.add(s)
+                }
+            }
+            //calling a method of the adapter class and passing the filtered list
+            recyclerAdapter = TodoAdapter(filterdNames, this)
+            recyclerView.layoutManager = LinearLayoutManager(this)
+            recyclerView.adapter = recyclerAdapter
+        }
+        else
+        {
+             SetAdapter(currentpage)
+        }
     }
 
 }
