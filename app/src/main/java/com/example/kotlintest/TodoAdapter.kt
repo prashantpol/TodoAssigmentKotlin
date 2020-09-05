@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 
-class TodoAdapter(public var mTodoModels :ArrayList<TodoModel>?, public val context : Context,) :RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() ,Filterable {
+class TodoAdapter(public var mTodoModels :ArrayList<TodoModel>?, public val context : Context,) :RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
 
 
     class TodoViewHolder(containerView: View): RecyclerView.ViewHolder(containerView) {
@@ -81,15 +81,7 @@ class TodoAdapter(public var mTodoModels :ArrayList<TodoModel>?, public val cont
        }
     }
 
-    override fun getFilter(): Filter {
-          var filterTodo: FilterTodo? =null
-        if (filterTodo == null) {
-            filterTodo = FilterTodo(mTodoModels as ArrayList<TodoModel>, this)
-        }
 
-
-        return filterTodo
-    }
 
 
 }
